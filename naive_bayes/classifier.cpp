@@ -156,10 +156,44 @@ string GNB::predict(vector<double> sample)
 
         A label representing the best guess of the classifier. Can
         be one of "left", "keep" or "right".
-        """
-        # TODO - complete this
     */
+    vector<double> probs;
 
-    return this->possible_labels[1];
+    for (int i = 0; i < this->possible_labels.size(); i++)
+    {
+        vector<double> means = this->means.at(i);
+        vector<double> stds = this->stds.at(i);
+        string label = this->possible_labels.at(i);
 
+        double product = 1;
+        for (int j = 0; j < sample.size(); j++)
+        {
+            double mu = means.at(j);
+            double sig = stds.at(j);
+            double var = sample.at(j);
+
+            double likelihood = gaussian_probability(var, mu, sig);
+            product *= likelihood;
+        }
+
+        probs.push_back(product);
+    }
+
+    double sum = accumulate(probs.begin(), probs.end(), 0.0);
+    // normalize probs
+    transform(probs.begin(), probs.end(), probs.begin(), [sum](double p) { return p / sum; });
+
+    // Find best probability
+    int imax = 0;
+    double pmax = 0;
+    for (int i = 0; i < probs.size(); i++)
+    {
+        if (probs.at(i) > pmax)
+        {
+            pmax = probs.at(i);
+            imax = i;
+        }
+    }
+
+    return this->possible_labels[imax];
 }
