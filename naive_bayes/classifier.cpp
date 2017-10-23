@@ -54,63 +54,62 @@ double GNB::gaussian_probability(double obs, double mu, double sig)
 
 void GNB::train(vector<vector<double>> data, vector<string> labels)
 {
+    /*
+        Trains the classifier with N data points and labels.
 
-	/*
-		Trains the classifier with N data points and labels.
+        INPUTS
+        data - array of N observations
+          - Each observation is a tuple with 4 values: s, d,
+            s_dot and d_dot.
+          - Example : [
+                  [3.5, 0.1, 5.9, -0.02],
+                  [8.0, -0.3, 3.0, 2.2],
+                  ...
+              ]
 
-		INPUTS
-		data - array of N observations
-		  - Each observation is a tuple with 4 values: s, d,
-		    s_dot and d_dot.
-		  - Example : [
-			  	[3.5, 0.1, 5.9, -0.02],
-			  	[8.0, -0.3, 3.0, 2.2],
-			  	...
-		  	]
+        labels - array of N labels
+          - Each label is one of "left", "keep", or "right".
+    */
 
-		labels - array of N labels
-		  - Each label is one of "left", "keep", or "right".
-	*/
+    map<string, vectmatrix> totals_by_label;
 
-	map<string, vectmatrix> totals_by_label;
+    int n_vars = 4;
 
-	int n_vars = 4;
+    for (string label : this->possible_labels)
+    {
+        vectmatrix totals = make_shared<vector<shared_ptr<vector<double>>>>();
 
-	for (string label : this->possible_labels)
-	{
-	    vectmatrix totals = make_shared<vector<shared_ptr<vector<double>>>>();
+        for (int i = 0; i < n_vars; i++)
+        {
+            totals->push_back(make_shared<vector<double>>());
+        }
 
-	    for (int i = 0; i < n_vars; i++)
-	    {
-	        totals->push_back(make_shared<vector<double>>());
-	    }
+        totals_by_label.insert(pair<string, vectmatrix>(label, totals));
+    }
 
-	    totals_by_label.insert(pair<string, vectmatrix>(label, totals));
-	}
+    // For each data vector, aggregate each of the 4 data vector vars per
+    // label type
+    for (int i = 0; i < data.size(); i++)
+    {
+        vector<double> X = data.at(i);
+        string Y = labels.at(i);
 
-	// For each data vector, aggregate each of the 4 data vector vars per
-	// label type
-	for (int i = 0; i < data.size(); i++)
-	{
-	    vector<double> X = data.at(i);
-	    string Y = labels.at(i);
-
-	    vectmatrix totals = totals_by_label[Y];
-	    // For each of the 4 var types
-	    // s, d, s_dot, d_dot
-	    // Aggregate them in arrays (for each type) within the
-	    // current label
-	    for (int j = 0; j < n_vars; j++)
-	    {
+        vectmatrix totals = totals_by_label[Y];
+        // For each of the 4 var types
+        // s, d, s_dot, d_dot
+        // Aggregate them in arrays (for each type) within the
+        // current label
+        for (int j = 0; j < n_vars; j++)
+        {
             double var = X.at(j);
-	        shared_ptr<vector<double>> var_vect = totals->at(j);
-	        var_vect->push_back(var);
-	    }
-	}
+            shared_ptr<vector<double>> var_vect = totals->at(j);
+            var_vect->push_back(var);
+        }
+    }
 
-	// Now that we have everything aggregated, we can calculate the mean
-	// and std per each var (i.e. s, d, s_dot, d_dot)
-	// means: [ [left_s_mean, left_d_mean, ...], [keep_s_mean, keep_d_mean, ...], ...]
+    // Now that we have everything aggregated, we can calculate the mean
+    // and std per each var (i.e. s, d, s_dot, d_dot)
+    // means: [ [left_s_mean, left_d_mean, ...], [keep_s_mean, keep_d_mean, ...], ...]
     for (string label : this->possible_labels)
     {
         vector<double> means;
@@ -144,23 +143,23 @@ void GNB::train(vector<vector<double>> data, vector<string> labels)
 
 string GNB::predict(vector<double> sample)
 {
-	/*
-		Once trained, this method is called and expected to return
-		a predicted behavior for the given observation.
+    /*
+        Once trained, this method is called and expected to return
+        a predicted behavior for the given observation.
 
-		INPUTS
+        INPUTS
 
-		observation - a 4 tuple with s, d, s_dot, d_dot.
-		  - Example: [3.5, 0.1, 8.5, -0.2]
+        observation - a 4 tuple with s, d, s_dot, d_dot.
+          - Example: [3.5, 0.1, 8.5, -0.2]
 
-		OUTPUT
+        OUTPUT
 
-		A label representing the best guess of the classifier. Can
-		be one of "left", "keep" or "right".
-		"""
-		# TODO - complete this
-	*/
+        A label representing the best guess of the classifier. Can
+        be one of "left", "keep" or "right".
+        """
+        # TODO - complete this
+    */
 
-	return this->possible_labels[1];
+    return this->possible_labels[1];
 
 }
